@@ -5,11 +5,11 @@ using System;
 
 public class TestSystem : MonoBehaviour {
 
-    private ParticleSystem system;
+    private PendulumSystem system;
     private ODEsolver stepper;
 
     private void Start() {
-        system = new SimpleSystem();
+        system = new PendulumSystem();
         stepper = new ExplicitEuler();
     }
 
@@ -24,8 +24,9 @@ public class TestSystem : MonoBehaviour {
         }
 
         Gizmos.color = Color.red;
-        for (int i = 0; i < system.GetState().Count; i++) {
-            Gizmos.DrawSphere(system.GetState()[i], 0.3f);
+        List<Vector3> positions = system.GetPositions();
+        for (int i = 0; i < positions.Count; i++) {
+            Gizmos.DrawSphere(positions[i], 0.3f);
         }
     }
 }
