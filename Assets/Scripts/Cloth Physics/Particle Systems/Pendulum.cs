@@ -8,6 +8,7 @@ public class PendulumSystem : ParticleSystem {
     private float m = 0.1f;  // mass of one particle
     private float stiffness = 1.5f;  // stiffness of all springs (k constant)
     private float restLength = 0.5f;  // rest length of all springs
+    private float drag = 0.1f;  // drag constant
 
     // struct that contains spring information for every particle
     public class Spring {
@@ -54,8 +55,11 @@ public class PendulumSystem : ParticleSystem {
         f.Add(new Vector3(0f, 0f, 0f));
 
         for (int i = 1; i < P.Count; i++) {
-            // apply gravity
+            // calculate gravity
             Vector3 gravity = Physics.gravity * m;
+
+            // calculate drag
+            Vector3 dragForce = -drag * V[i];
 
             // apply spring force
             Vector3 springForce = new Vector3(0f, 0f, 0f);
@@ -67,7 +71,7 @@ public class PendulumSystem : ParticleSystem {
             }
 
             // calculate final force and acceleration
-            Vector3 force = gravity + springForce;
+            Vector3 force = gravity + springForce + dragForce;
             Vector3 acceleration = force / m;
 
             // add velocity and acceleration
