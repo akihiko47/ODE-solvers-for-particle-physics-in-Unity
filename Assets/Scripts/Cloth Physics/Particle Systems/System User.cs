@@ -1,20 +1,22 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using System;
 
-public class TestSystem : MonoBehaviour {
+public class ParticleSystemUser : MonoBehaviour {
+
+    private int iterations = 8;
 
     private PendulumSystem system;
     private ODEsolver stepper;
 
     private void Start() {
         system = new PendulumSystem();
-        stepper = new ExplicitEuler();
+        stepper = new RungeKutta4();
     }
 
     private void Update() {
-        stepper.takeStep(system, Time.deltaTime);
+        for (int i = 0; i < iterations; i++) {
+            stepper.takeStep(system, Time.deltaTime / iterations);
+        }
     }
 
 

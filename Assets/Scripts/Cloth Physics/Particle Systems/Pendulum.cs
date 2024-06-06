@@ -3,14 +3,13 @@ using UnityEngine;
 
 public class PendulumSystem : ParticleSystem {
 
-    private int numParticles = 2;
+    private int numParticles = 10;
 
     private float m = 0.1f;  // mass of one particle
-    private float stiffness = 1.5f;  // stiffness of all springs (k constant)
-    private float restLength = 0.5f;  // rest length of all springs
-    private float drag = 0.1f;  // drag constant
+    private float stiffness = 5f;  // stiffness of all springs (k constant)
+    private float restLength = 1f;  // rest length of all springs
+    private float drag = 0.05f;  // drag constant
 
-    // struct that contains spring information for every particle
     public class Spring {
         List<int> connections;
 
@@ -30,18 +29,18 @@ public class PendulumSystem : ParticleSystem {
     Spring[] springs;
 
     public PendulumSystem() {
-        // position and velocity of first point
-        _state.Add(new Vector3(0f, 2f, 0f));
-        _state.Add(new Vector3(0f, 0f, 0f));
+        // create multiple points for pendulum
+        for (int i = 0; i < numParticles; i++) {
+            _state.Add(new Vector3(i, i, 0f));
+            _state.Add(new Vector3(0f, 0f, 0f));
+        }
 
-        // position and velocity of second point
-        _state.Add(new Vector3(2f, 0f, 0f));
-        _state.Add(new Vector3(0f, 0f, 0f));
-
-        // spring from first point to second
+        // connect points with springs
         CreateListOfSprings();
-        springs[0].AddConnection(1);
-        springs[1].AddConnection(0);
+        for (int i = 1; i < numParticles; i++) {
+            springs[i].AddConnection(i - 1);
+            springs[i - 1].AddConnection(i);
+        }
     }
 
     public override List<Vector3> EvalF(List<Vector3> state) {
