@@ -3,13 +3,13 @@ using UnityEngine;
 
 public class ParticleSystemUser : MonoBehaviour {
 
-    private int iterations = 8;
+    private int iterations = 32;
 
-    private PendulumSystem system;
+    private Cloth system;
     private ODEsolver stepper;
 
     private void Start() {
-        system = new PendulumSystem();
+        system = new Cloth();
         stepper = new RungeKutta4();
     }
 
@@ -17,6 +17,7 @@ public class ParticleSystemUser : MonoBehaviour {
         for (int i = 0; i < iterations; i++) {
             stepper.takeStep(system, Time.deltaTime / iterations);
         }
+        system.MoveFixedPoints(transform.position);
     }
 
 
