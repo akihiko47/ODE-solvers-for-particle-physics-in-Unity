@@ -3,15 +3,14 @@ using UnityEngine;
 
 public class Cloth : ParticleSystem {
 
-    private int n = 10;
-    private int m = 10;
+    private int n = 15;
     private int numParticles;
 
     private float mass = 0.1f;  // mass of one particle
-    private float stiffness = 30f;  // stiffness of all springs (k constant)
-    private float restLength = 1f;  // rest length of all springs
+    private float stiffness = 20f;  // stiffness of all springs (k constant)
     private float drag = 0.4f;  // drag constant
 
+    private static float diag = 1.41421356237f;  // sqrt(2)
     public class Spring {
         List<int> connections;
         public List<float> restLengths;
@@ -34,11 +33,11 @@ public class Cloth : ParticleSystem {
     Spring[] springs;
 
     public Cloth() {
-        numParticles = n * m;
+        numParticles = n * n;
 
         // create multiple points for pendulum
         for (int i = 0; i < n; i++) {
-            for (int j = 0; j < m; j++) {
+            for (int j = 0; j < n; j++) {
                 _state.Add(new Vector3(i, j, 0f));
                 _state.Add(new Vector3(0f, 0f, 0f));
             }
@@ -47,28 +46,42 @@ public class Cloth : ParticleSystem {
         // connect points with springs
         CreateListOfSprings();
         for (int i = 0; i < n; i++) {
-            for (int j = 1; j < m; j++) {
-                springs[(j + i * n)].AddConnection((j + i * n) - 1, 1f);
-                springs[(j + i * n) - 1].AddConnection((j + i * n), 1f);
-
-                if (i > 0) {
-                    springs[(j + i * n)].AddConnection((j + i * n) - n, 1f);
-                    springs[(j + i * n) - n].AddConnection((j + i * n), 1f);
+            for (int j = 0; j < n; j++) {
+                
+                // add vertical springs
+                if (j < n - 1) {
+                    springs[i * n + j].AddConnection(i * n + j + 1, 1f);
+                    springs[i * n + j + 1].AddConnection(i * n + j, 1f);
                 }
 
-                if (i < n - 1 && j < m - 1) {
-                    springs[(j + i * n)].AddConnection((j + i * n) - n - 1, 1.4142f);
-                    springs[(j + i * (n + 1) + 1)].AddConnection((j + i * n), 1.4142f);
+                // add horizontal springs
+                if (i < n - 1) {
+                    springs[i * n + j].AddConnection((i + 1) * n + j, 1f);
+                    springs[(i + 1) * n + j].AddConnection(i * n + j, 1f);
+                }
 
-                    springs[(j + i * n) + 1].AddConnection((j + i * (n + 1)), 1.4142f);
-                    springs[(j + i * (n + 1))].AddConnection((j + i * n) + 1, 1.4142f);
-                } 
+                // diagonal springs
+                if (j < n - 1 && i < n - 1) {
+                    springs[i * n + j].AddConnection((i + 1) * n + j + 1, diag);
+                    springs[(i + 1) * n + j + 1].AddConnection(i * n + j, diag);
+
+                    springs[i * n + j + 1].AddConnection((i + 1) * n + j, diag);
+                    springs[(i + 1) * n + j].AddConnection(i * n + j + 1, diag);
+                }
+
+                // add long vertical springs
+                if (j < n - 2) {
+                    springs[i * n + j].AddConnection(i * n + j + 2, 2f);
+                    springs[i * n + j + 2].AddConnection(i * n + j, 2f);
+                }
+
+                // add long horizontal springs
+                if (i < n - 2) {
+                    springs[i * n + j].AddConnection((i + 2) * n + j, 2f);
+                    springs[(i + 2) * n + j].AddConnection(i * n + j, 2f);
+                }
             }
         }
-        /*for (int i = 1; i < numParticles; i++) {
-            springs[i].AddConnection(i - 1);
-            springs[i - 1].AddConnection(i);
-        }*/
     }
 
     public override List<Vector3> EvalF(List<Vector3> state) {
@@ -105,11 +118,11 @@ public class Cloth : ParticleSystem {
         }
 
         // fix cloth points
-        f[numParticles * 2 - n * 2 - 2] = new Vector3(0f, 0f, 0f);
-        f[numParticles * 2 - n * 2 - 1] = new Vector3(0f, 0f, 0f);
+        f[(numParticles - 1) * 2] = new Vector3(0f, 0f, 0f);
+        f[(numParticles - 1) * 2 + 1] = new Vector3(0f, 0f, 0f);
 
-        f[n * 2 - 2] = new Vector3(0f, 0f, 0f);
-        f[n * 2 - 1] = new Vector3(0f, 0f, 0f);
+        f[(n - 1) * 2] = new Vector3(0f, 0f, 0f);
+        f[(n - 1) * 2 + 1] = new Vector3(0f, 0f, 0f);
 
         return f;
     }
@@ -121,8 +134,9 @@ public class Cloth : ParticleSystem {
         }
     }
 
-    public void MoveFixedPoints(Vector3 position) {
-        _state[0] = position;
+    public void AddMovement() {
+        _state[(n - 1) * 2] += new Vector3(0f, 0f, Mathf.Sin(Time.realtimeSinceStartup * 4f)) / 2f;
+        _state[(numParticles - 1) * 2] += new Vector3(0f, 0f, Mathf.Sin(Time.realtimeSinceStartup * 4f)) / 2f;
     }
 
     public List<Vector3> GetPositions() {
@@ -139,5 +153,9 @@ public class Cloth : ParticleSystem {
             velocities.Add(_state[i]);
         }
         return velocities;
+    }
+
+    public int GetN() {
+        return n;
     }
 }

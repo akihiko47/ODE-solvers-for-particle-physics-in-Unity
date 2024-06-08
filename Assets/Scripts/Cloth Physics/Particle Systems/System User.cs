@@ -3,21 +3,28 @@ using UnityEngine;
 
 public class ParticleSystemUser : MonoBehaviour {
 
-    private int iterations = 32;
+    private int iterations = 16;
 
     private Cloth system;
     private ODEsolver stepper;
 
+    private ClothMeshGenerator meshGenerator;
+
     private void Start() {
         system = new Cloth();
         stepper = new RungeKutta4();
+        meshGenerator = GetComponent<ClothMeshGenerator>();
     }
 
     private void Update() {
         for (int i = 0; i < iterations; i++) {
             stepper.takeStep(system, Time.deltaTime / iterations);
         }
-        system.MoveFixedPoints(transform.position);
+        system.AddMovement();
+
+        if (meshGenerator != null) {
+            meshGenerator.GenerateMesh(system.GetPositions(), system.GetN());
+        }
     }
 
 
@@ -26,10 +33,11 @@ public class ParticleSystemUser : MonoBehaviour {
             return;
         }
 
-        Gizmos.color = Color.red;
+        Gizmos.matrix = transform.localToWorldMatrix;
+        Gizmos.color = Color.black;
         List<Vector3> positions = system.GetPositions();
         for (int i = 0; i < positions.Count; i++) {
-            Gizmos.DrawSphere(positions[i], 0.3f);
+            Gizmos.DrawSphere(positions[i], 0.1f);
         }
     }
 }
