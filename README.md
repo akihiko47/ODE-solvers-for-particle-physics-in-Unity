@@ -1,5 +1,5 @@
 # 🧮 ODE solvers for particle systems 🧮
-![banner](Images/banner.gif)
+![banner](Images/banner.jpg)
 
 In this repository, I have implemented some Ordinary Differential Equations (ODE) solvers and cloth particle system that use them. They basically do something like this: 
 
